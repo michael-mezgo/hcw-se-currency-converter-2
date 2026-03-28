@@ -1,10 +1,12 @@
-﻿namespace CurrencyConverter.Web
+﻿using System.Globalization;
+
+namespace CurrencyConverter.Web
 {
     using System.Xml.Linq;
 
     public class CurrencyService : ICurrencyService
     {
-        private const string ECB_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxrefdaily.xml";
+        private const string ECB_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
         private const string VALID_KEY = "secret123";
 
         public double Convert(string fromCurrency, string toCurrency, double amount, string apiKey)
@@ -31,7 +33,7 @@
                 .Where(x => x.Name.LocalName == "Cube" && x.Attribute("currency") != null)
                 .ToDictionary(
                     x => x.Attribute("currency").Value,
-                    x => double.Parse(x.Attribute("rate").Value)
+                    x => double.Parse(x.Attribute("rate").Value, CultureInfo.InvariantCulture)
                 );
 
             return rates;
