@@ -4,7 +4,7 @@
 
     public class CurrencyService : ICurrencyService
     {
-        private const string ECB_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxrefdaily.xml";
+        private const string ECB_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
         private const string VALID_KEY = "secret123";
 
         public double Convert(string fromCurrency, string toCurrency, double amount, string apiKey)
@@ -21,6 +21,13 @@
 
             double eurAmount = amount / fromRate;
             return eurAmount * toRate;
+        }
+
+        public List<string> GetSupportedCurrencies()
+        {
+            var rates = LoadRates();
+
+            return rates.Keys.ToList();
         }
 
         private Dictionary<string, double> LoadRates()

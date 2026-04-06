@@ -7,5 +7,8 @@
     {
         [OperationContract]
         double Convert(string fromCurrency, string toCurrency, double amount, string apiKey);
+
+        [OperationContract]
+        List<string> GetSupportedCurrencies();
     }
 }

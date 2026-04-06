@@ -1,18 +1,30 @@
+using CoreWCF;
+using CoreWCF.Configuration;
+using CoreWCF.Description;
 using CurrencyConverter.Web;
-using SoapCore;
-using System.ServiceModel;
-using System.Xml.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSoapCore();
-builder.Services.AddSingleton<ICurrencyService, CurrencyService>();
+builder.Services.AddServiceModelServices();
+builder.Services.AddServiceModelMetadata();
+
+builder.Services.AddSingleton<ServiceDebugBehavior>(new ServiceDebugBehavior
+{
+    IncludeExceptionDetailInFaults = true
+});
+
 var app = builder.Build();
 
-app.UseRouting();
-app.UseSoapEndpoint<ICurrencyService>(
-    "/CurrencyService.svc",
-    new SoapEncoderOptions()
-);
+app.UseServiceModel(serviceBuilder =>
+{
+    serviceBuilder.AddService<CurrencyService>();
+
+    serviceBuilder.AddServiceEndpoint<CurrencyService, ICurrencyService>(
+        new BasicHttpBinding(),
+        "/CurrencyService.svc");
+});
+
+var smb = app.Services.GetRequiredService<ServiceMetadataBehavior>();
+smb.HttpGetEnabled = true;
 
 app.Run();
