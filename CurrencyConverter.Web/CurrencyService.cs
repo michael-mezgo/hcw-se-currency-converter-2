@@ -25,6 +25,13 @@ namespace CurrencyConverter.Web
             return eurAmount * toRate;
         }
 
+        public List<string> GetSupportedCurrencies()
+        {
+            var rates = LoadRates();
+
+            return rates.Keys.ToList();
+        }
+
         private Dictionary<string, double> LoadRates()
         {
             var xml = XDocument.Load(ECB_URL);
