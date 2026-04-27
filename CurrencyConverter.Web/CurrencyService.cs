@@ -1,49 +1,52 @@
-﻿using System.Globalization;
+using System.Globalization;
+using System.Xml.Linq;
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
 
 namespace CurrencyConverter.Web
 {
-    using System.Xml.Linq;
-
-    public class CurrencyService : ICurrencyService
+    public class CurrencyConverterService : CurrencyService.CurrencyServiceBase
     {
         private const string ECB_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
         private const string VALID_KEY = "secret123";
 
-        public double Convert(string fromCurrency, string toCurrency, double amount, string apiKey)
+        public override Task<ConvertResponse> Convert(ConvertRequest request, ServerCallContext context)
         {
-            if (apiKey != VALID_KEY)
-            {
-                throw new Exception("Authentication failed");
-            }
+            if (request.ApiKey != VALID_KEY)
+                throw new RpcException(new Status(StatusCode.Unauthenticated, "Authentication failed"));
 
             var rates = LoadRates();
 
-            double fromRate = fromCurrency == "EUR" ? 1 : rates[fromCurrency];
-            double toRate = toCurrency == "EUR" ? 1 : rates[toCurrency];
+            double fromRate = request.FromCurrency == "EUR" ? 1 : rates[request.FromCurrency];
+            double toRate = request.ToCurrency == "EUR" ? 1 : rates[request.ToCurrency];
 
-            double eurAmount = amount / fromRate;
-            return eurAmount * toRate;
+            double result = (request.Amount / fromRate) * toRate;
+
+            return Task.FromResult(new ConvertResponse { Result = result });
         }
 
-        public List<string> GetSupportedCurrencies()
+        public override Task<SupportedCurrenciesResponse> GetSupportedCurrencies(Empty request, ServerCallContext context)
         {
             var rates = LoadRates();
+            var currencies = rates.Keys.ToList();
+            currencies.Add("EUR");
+            currencies.Sort();
 
-            return rates.Keys.ToList();
+            var response = new SupportedCurrenciesResponse();
+            response.Currencies.AddRange(currencies);
+            return Task.FromResult(response);
         }
 
         private Dictionary<string, double> LoadRates()
         {
             var xml = XDocument.Load(ECB_URL);
 
-            var rates = xml.Descendants()
+            return xml.Descendants()
                 .Where(x => x.Name.LocalName == "Cube" && x.Attribute("currency") != null)
                 .ToDictionary(
-                    x => x.Attribute("currency").Value,
-                    x => double.Parse(x.Attribute("rate").Value, CultureInfo.InvariantCulture)
+                    x => x.Attribute("currency")!.Value,
+                    x => double.Parse(x.Attribute("rate")!.Value, CultureInfo.InvariantCulture)
                 );
-
-            return rates;
         }
     }
 }

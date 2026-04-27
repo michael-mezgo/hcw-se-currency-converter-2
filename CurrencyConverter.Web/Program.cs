@@ -1,30 +1,17 @@
-using CoreWCF;
-using CoreWCF.Configuration;
-using CoreWCF.Description;
 using CurrencyConverter.Web;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddServiceModelServices();
-builder.Services.AddServiceModelMetadata();
-
-builder.Services.AddSingleton<ServiceDebugBehavior>(new ServiceDebugBehavior
+builder.WebHost.ConfigureKestrel(options =>
 {
-    IncludeExceptionDetailInFaults = true
+    options.ListenLocalhost(5125, o => o.Protocols = HttpProtocols.Http2);
 });
+
+builder.Services.AddGrpc();
 
 var app = builder.Build();
 
-app.UseServiceModel(serviceBuilder =>
-{
-    serviceBuilder.AddService<CurrencyService>();
-
-    serviceBuilder.AddServiceEndpoint<CurrencyService, ICurrencyService>(
-        new BasicHttpBinding(),
-        "/CurrencyService.svc");
-});
-
-var smb = app.Services.GetRequiredService<ServiceMetadataBehavior>();
-smb.HttpGetEnabled = true;
+app.MapGrpcService<CurrencyConverterService>();
 
 app.Run();
