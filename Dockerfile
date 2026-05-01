@@ -6,9 +6,10 @@ RUN dotnet restore CurrencyConverter.Web/CurrencyConverter.Web.csproj
 
 COPY CurrencyConverter.Web/ CurrencyConverter.Web/
 WORKDIR /src/CurrencyConverter.Web
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish -c Release -o /app/publish --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+# Distroless: no shell, no package manager, runs as non-root (UID 1654) by default
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 
