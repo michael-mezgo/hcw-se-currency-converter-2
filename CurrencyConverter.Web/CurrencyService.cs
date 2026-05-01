@@ -7,8 +7,8 @@ namespace CurrencyConverter.Web
 {
     public class CurrencyConverterService : CurrencyService.CurrencyServiceBase
     {
-        private const string ECB_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
-        private const string VALID_KEY = "secret123";
+        private readonly string ECB_URL = Environment.GetEnvironmentVariable("ECB_URL") ?? throw new Exception("ECB_URL not set");
+        private readonly string VALID_KEY = Environment.GetEnvironmentVariable("API_KEY") ?? throw new Exception("API_KEY not set");
 
         public override Task<ConvertResponse> Convert(ConvertRequest request, ServerCallContext context)
         {
