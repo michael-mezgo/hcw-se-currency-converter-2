@@ -1,11 +1,16 @@
 using CurrencyConverter.Web;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
+DotNetEnv.Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
+
+var port = Environment.GetEnvironmentVariable("PORT")
+    ?? throw new Exception("PORT not set");
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenLocalhost(5125, o => o.Protocols = HttpProtocols.Http2);
+    options.ListenLocalhost(int.Parse(port), o => o.Protocols = HttpProtocols.Http2);
 });
 
 builder.Services.AddGrpc();
