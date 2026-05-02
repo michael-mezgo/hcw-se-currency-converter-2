@@ -13,5 +13,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 
-EXPOSE 8080
+EXPOSE 5125
+ENV ASPNETCORE_URLS=http://0.0.0.0:5125
 ENTRYPOINT ["dotnet", "CurrencyConverter.Web.dll"]
