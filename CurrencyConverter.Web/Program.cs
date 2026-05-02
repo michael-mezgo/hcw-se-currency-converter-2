@@ -10,7 +10,7 @@ var port = Environment.GetEnvironmentVariable("PORT")
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenLocalhost(int.Parse(port), o => o.Protocols = HttpProtocols.Http2);
+    options.ListenAnyIP(int.Parse(port), o => o.Protocols = HttpProtocols.Http2);
 });
 
 builder.Services.AddGrpc();
